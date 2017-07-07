@@ -24,3 +24,7 @@ To use it, you click the "Add animation" button. This adds a box with some field
 * FPS - Defines the framerate at which to render the animation
 
 Once everything is setup, the next time you make a change to an animation, you can either render only the animation that was changed, or if changes were made to the model, render all of them at once.
+
+## Known issues/limitations
+
+* It doesn't yet render spritesheets (working on it), only the individual frames.
