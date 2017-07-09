@@ -28,4 +28,4 @@ Once everything is setup, the next time you make a change to an animation, you c
 
 ## Known issues/limitations
 
-* Doesn't clear old frames i.e. if an animation is 10 frames long, and later reduces to 5 frames, the old frames (number 5 to 10) will remain
+See issues tab
