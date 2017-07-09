@@ -261,26 +261,20 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
 
                     # create blank image based on dimensions we calculated earlier
                     new_image = bpy.data.images.new(spritesheet_name, max_x_size, max_y_size, True )
+                    new_image.color = (0.0, 0.0, 0.0, 0.0)
+                    new_image.use_alpha = True
+                    new_image.alpha_mode = 'STRAIGHT'
+                    spritesheet_output_path = bpy.path.abspath(selected_animation.spritesheet_output_path)
+                    new_image.filepath_raw = spritesheet_output_path
+                    new_image.file_format = 'PNG'
 
                 if (last_x + image.size[0] > max_x_size):
                     last_x = 0
                     last_y += image.size[1]
                 place(image, new_image, last_x, last_y)
-                # if (last_x + image.size[0] <= max_x_size):
-                #     place(image, new_image, last_x, last_y)
-                # else:
-                #     last_x = 0
-                #     last_y += image.size[1]
-                #     place(image, new_image, last_x, last_y)
                 last_x += image.size[0]
                 wm.progress_update(i)
 
-
-            new_image.use_alpha = True
-            new_image.alpha_mode = 'STRAIGHT'
-            spritesheet_output_path = bpy.path.abspath(selected_animation.spritesheet_output_path)
-            new_image.filepath_raw = spritesheet_output_path
-            new_image.file_format = 'PNG'
             new_image.save()
             wm.progress_end()
             self.report({"INFO"}, "Spritesheet rendered at location %s"%spritesheet_output_path)
