@@ -261,7 +261,6 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
 
                     # create blank image based on dimensions we calculated earlier
                     new_image = bpy.data.images.new(spritesheet_name, max_x_size, max_y_size, True )
-                    new_image.color = (0.0, 0.0, 0.0, 0.0)
                     new_image.use_alpha = True
                     new_image.alpha_mode = 'STRAIGHT'
                     spritesheet_output_path = bpy.path.abspath(selected_animation.spritesheet_output_path)
