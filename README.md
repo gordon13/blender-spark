@@ -22,9 +22,10 @@ To use it, you click the "Add animation" button. This adds a box with some field
 * Start frame - Frame on which the animation starts
 * End frame - Frame on which the animation ends
 * FPS - Defines the framerate at which to render the animation
+* Spritesheet output location - Defines where the spritesheet will be saved
 
 Once everything is setup, the next time you make a change to an animation, you can either render only the animation that was changed, or if changes were made to the model, render all of them at once.
 
 ## Known issues/limitations
 
-* It doesn't yet render spritesheets (working on it), only the individual frames.
+* Doesn't clear old frames i.e. if an animation is 10 frames long, and later reduces to 5 frames, the old frames (number 5 to 10) will remain
