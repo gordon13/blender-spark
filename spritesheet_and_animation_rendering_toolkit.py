@@ -34,7 +34,7 @@ class VIEW3D_PT_sprite_animation(Panel):
 
         col = layout.column()
         sub = col.row()
-        sub.operator("spritesheet_generator.addanimation")
+        sub.operator("spritesheet_generator.addanimation", icon="PLUS")
         sub.operator("spritesheet_generator.generateallspritesheet", text="Render all animations", icon="RENDER_STILL")
         
         col = layout.column()
@@ -69,7 +69,7 @@ class VIEW3D_PT_sprite_animation(Panel):
                 row = box.row()
                 row.prop(anim, "spritesheet_output_path", text="Spritesheet output location")
                 row = box.row()
-                row.operator("spritesheet_generator.generatesinglespritesheet").index = i
+                row.operator("spritesheet_generator.generatesinglespritesheet", icon="RENDERLAYERS").index = i
 
 # =====================================================
 #                       FUNCTIONS
