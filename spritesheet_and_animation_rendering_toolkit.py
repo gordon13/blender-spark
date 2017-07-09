@@ -34,6 +34,8 @@ class VIEW3D_PT_sprite_animation(Panel):
 
         col = layout.column()
         sub = col.row()
+        sub.prop(bpy.context.scene, "spritesheetMaxSize", text="Spritesheet max size")
+        sub = col.row()
         sub.operator("spritesheet_generator.addanimation", icon="PLUS")
         sub.operator("spritesheet_generator.generateallspritesheet", text="Render all animations", icon="RENDER_STILL")
         
@@ -91,14 +93,25 @@ def roundToPowerOf2(inputToRoundUp):
     inputToRoundUp += 1
     return inputToRoundUp
 
-def get_max_num_sprites(image_names):
-    size = len(image_names)
-    return ( int(size / 2), int(size / 2) ) if size % 2 == 0 else ( int((size - 1) / 2), int(((size - 1) / 2) + 1) )
+
+def getNumberFramesEachSide(num_frames, frame_size):
+    frame_size = int(frame_size)
+    num_frames = int(num_frames)
+    
+    # calculate length of sides needed to hold that many frames in a square, then round up to next unit so we don't clip any frames
+    sizey = sizex = int(math.ceil(math.sqrt(num_frames)))
+
+    max_image_size = int(bpy.context.scene.spritesheetMaxSize)
+    if (sizex * frame_size > max_image_size or sizey * frame_size > max_image_size):
+        raise ValueError('Size of spritesheet (%s) is larger than the max allowable of %s'%(sizex * frame_size, max_image_size))
+
+    return (sizex, sizey)
 
 def place(sub_image, new_image, x, y):
     """
     this function updates the new_image "in place"
     """ 
+    #TODO improve performance
     new_image_pixels_1d = np.array(new_image.pixels)
     new_image_pixels_2d = np.reshape(new_image_pixels_1d, (new_image.size[1], new_image.size[0] * 4))
 
@@ -235,9 +248,6 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
             # initialise progress bar
             wm.progress_begin(0, total_images)
 
-            # number of sprites in x and y direction (handles odd and even number )
-            x_num_sprites, y_num_sprites = get_max_num_sprites(image_names)
-
             new_image = None
             last_x, last_y = (0,0)
             for i, name in enumerate(image_names):
@@ -250,7 +260,8 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
                 if (new_image == None):
 
                     # calculate dimensions of spritesheet
-                    max_x_size = x_num_sprites * image.size[0]
+                    x_num_sprites, y_num_sprites = getNumberFramesEachSide(total_images, image.size[0])
+                    max_x_size = roundToPowerOf2(x_num_sprites * image.size[0]) # ensure dimensions is power of 2
                     max_y_size = roundToPowerOf2(y_num_sprites * image.size[1]) # ensure dimensions is power of 2
 
                     # remove existing image otherwise we end up with image.0001, 0002 etc
@@ -293,10 +304,22 @@ class GenerateAllSpritesheetButton(bpy.types.Operator):
 
 def register():
     bpy.utils.register_module(__name__)
+
+    resolution_list = [("16","16","", 1),
+                        ("32","32","", 2),
+                        ("64","64","", 3),
+                        ("128","128","", 4),
+                        ("256","256","", 5),
+                        ("512","512","", 6),
+                        ("1024","1024","", 7),
+                        ("2048","2048","", 8),
+                        ("4096","4096","", 9)]
+    bpy.types.Scene.spritesheetMaxSize = bpy.props.EnumProperty(items=resolution_list, default="1024")
     bpy.types.Scene.animationsToRender = bpy.props.CollectionProperty(type=customPropertiesGroup)
 
 def unregister():
     bpy.utils.unregister_module(__name__)
+    del bpy.types.Scene.spritesheetMaxSize
     del bpy.types.Scene.animationsToRender
 
 if __name__ == "__main__":
