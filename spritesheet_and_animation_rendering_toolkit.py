@@ -218,6 +218,10 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
     index = bpy.props.IntProperty()
     def execute(self, context):
         selected_animation = bpy.context.scene.animationsToRender[self.index]
+
+        # progress bar
+        wm = bpy.context.window_manager
+
         if (selected_animation.active):
             formatted_path = bpy.path.abspath(selected_animation.output_path)
             path_parts = os.path.split(formatted_path)
@@ -230,16 +234,20 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
             
             # get all images from the given path
             image_names = glob.glob("%s*.png"%os.path.join(absolute_path, ''))
-            if (len(image_names) == 0):
+            total_images = len(image_names)
+            if (total_images == 0):
                 self.report({"ERROR"}, "No frames detected. You must render the animation first!")
                 return {'CANCELLED'}
+            
+            # initialise progress bar
+            wm.progress_begin(0, total_images)
 
             # number of sprites in x and y direction (handles odd and even number )
             x_num_sprites, y_num_sprites = get_max_num_sprites(image_names)
 
             new_image = None
             last_x, last_y = (0,0)
-            for name in image_names:
+            for i, name in enumerate(image_names):
                 print("--------")
                 real_path = bpy.path.abspath('//' + name)
                 image = load_image(real_path)
@@ -270,6 +278,8 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
                 #     last_y += image.size[1]
                 #     place(image, new_image, last_x, last_y)
                 last_x += image.size[0]
+                wm.progress_update(i)
+
 
             new_image.use_alpha = True
             new_image.alpha_mode = 'STRAIGHT'
@@ -277,7 +287,7 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
             new_image.filepath_raw = spritesheet_output_path
             new_image.file_format = 'PNG'
             new_image.save()
-
+            wm.progress_end()
             self.report({"INFO"}, "Spritesheet rendered at location %s"%spritesheet_output_path)
 
         return {'FINISHED'}
