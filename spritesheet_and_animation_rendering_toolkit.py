@@ -58,19 +58,19 @@ class VIEW3D_PT_sprite_animation(Panel):
                 row = box.row()
                 row.prop(anim, "armature", text="")
                 row.prop(anim, "animation", text="")
-                row = box.row()
+                row = box.column()
                 row.prop(anim, "camera", text="Camera")
-                row = box.row()
                 row.prop(anim, "output_path", text="Output location")
+                row.label(text="Frame path: %s.png"%(bpy.path.abspath(anim.output_path)))
                 row = box.row()
                 row.prop(anim, "start_frame", text="Start frame")
                 row.prop(anim, "end_frame", text="End frame")
                 row = box.row()
                 row.prop(anim, "fps", text="FPS")
                 row.operator("spritesheet_generator.rendesingleanimationframes", icon="RENDER_STILL").index = i
-                row = box.row()
+                row = box.column()
                 row.prop(anim, "spritesheet_output_path", text="Spritesheet output location")
-                row = box.row()
+                row.label(text="Spritesheet path: %s.png"%(bpy.path.abspath(anim.spritesheet_output_path)))
                 row.operator("spritesheet_generator.generatesinglespritesheet", icon="RENDERLAYERS").index = i
 
 # =====================================================
@@ -153,11 +153,11 @@ class customPropertiesGroup(bpy.types.PropertyGroup):
     armature = bpy.props.EnumProperty(items = getArmatures)
     camera = bpy.props.EnumProperty(items = getCameras)
     animation = bpy.props.EnumProperty(items = getActions)
-    output_path = bpy.props.StringProperty(default="//", maxlen=1024, subtype='FILE_PATH')
+    output_path = bpy.props.StringProperty(default="//", maxlen=1024, subtype='DIR_PATH')
     start_frame = bpy.props.IntProperty()
     end_frame = bpy.props.IntProperty()
     fps = bpy.props.IntProperty(default=24)
-    spritesheet_output_path = bpy.props.StringProperty(default="//", maxlen=1024, subtype='FILE_PATH')
+    spritesheet_output_path = bpy.props.StringProperty(default="//", maxlen=1024, subtype='DIR_PATH')
 
 
 
@@ -234,12 +234,11 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
 
             # get absolute path
             absolute_path = path_parts[0]
-
-            # get name and format
-            frame_name, frame_format = path_parts[1].split(".", 1)
+            frame_name = path_parts[1]
             
             # get all images from the given path
-            image_names = glob.glob("%s*.png"%os.path.join(absolute_path, ''))
+            glob_string = os.path.join(absolute_path, '*%s[0-9][0-9][0-9][0-9]*.png'%frame_name)
+            image_names = glob.glob("%s"%glob_string)
             total_images = len(image_names)
             if (total_images == 0):
                 self.report({"ERROR"}, "No frames detected. You must render the animation first!")
@@ -252,9 +251,11 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
             last_x, last_y = (0,0)
             for i, name in enumerate(image_names):
                 
-                print("--------")
 
                 real_path = bpy.path.abspath('//' + name)
+                
+                print("-------- %s"%real_path)
+
                 image = load_image(real_path)
 
                 if (new_image == None):
@@ -265,16 +266,15 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
                     max_y_size = roundToPowerOf2(y_num_sprites * image.size[1]) # ensure dimensions is power of 2
 
                     # remove existing image otherwise we end up with image.0001, 0002 etc
-                    spritesheet_name = "%s_spritesheet" % frame_name
-                    spritesheet = bpy.data.images.get(spritesheet_name)
+                    spritesheet = bpy.data.images.get(frame_name)
                     if (spritesheet is not None):
                         bpy.data.images.remove(spritesheet, do_unlink=True)
 
                     # create blank image based on dimensions we calculated earlier
-                    new_image = bpy.data.images.new(spritesheet_name, max_x_size, max_y_size, True )
+                    new_image = bpy.data.images.new(frame_name, max_x_size, max_y_size, True )
                     new_image.use_alpha = True
                     new_image.alpha_mode = 'STRAIGHT'
-                    spritesheet_output_path = bpy.path.abspath(selected_animation.spritesheet_output_path)
+                    spritesheet_output_path = bpy.path.abspath(selected_animation.spritesheet_output_path + ".png")
                     new_image.filepath_raw = spritesheet_output_path
                     new_image.file_format = 'PNG'
 
@@ -305,15 +305,15 @@ class GenerateAllSpritesheetButton(bpy.types.Operator):
 def register():
     bpy.utils.register_module(__name__)
 
-    resolution_list = [("16","16","", 1),
-                        ("32","32","", 2),
-                        ("64","64","", 3),
-                        ("128","128","", 4),
-                        ("256","256","", 5),
-                        ("512","512","", 6),
-                        ("1024","1024","", 7),
-                        ("2048","2048","", 8),
-                        ("4096","4096","", 9)]
+    resolution_list = [("16","16px","", 1),
+                        ("32","32px","", 2),
+                        ("64","64px","", 3),
+                        ("128","128px","", 4),
+                        ("256","256px","", 5),
+                        ("512","512px","", 6),
+                        ("1024","1024px","", 7),
+                        ("2048","2048px","", 8),
+                        ("4096","4096px","", 9)]
     bpy.types.Scene.spritesheetMaxSize = bpy.props.EnumProperty(items=resolution_list, default="1024")
     bpy.types.Scene.animationsToRender = bpy.props.CollectionProperty(type=customPropertiesGroup)
 
