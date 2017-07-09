@@ -100,21 +100,14 @@ def place(sub_image, new_image, x, y):
     this function updates the new_image "in place"
     """ 
     new_image_pixels_1d = np.array(new_image.pixels)
-    print(new_image_pixels_1d.size)
-    
     new_image_pixels_2d = np.reshape(new_image_pixels_1d, (new_image.size[1], new_image.size[0] * 4))
-    print(new_image_pixels_2d.size)
-    
+
     sub_image_pixels_2d = np.reshape(np.array(sub_image.pixels), (sub_image.size[1], sub_image.size[0]*4))
-    print(new_image_pixels_2d.size)
-    
-    print("(", new_image.size[1], " -", y, ") - ", sub_image.size[1])
     sub_image_width = sub_image.size[0]
     sub_image_height = sub_image.size[1]
+    
     y = (new_image.size[1] - y) - sub_image_height # convert y position to opengl space
     x *= 4 # scale x value by the number of channels because the array is wider in the x axis than the y axis by this much
-    
-    print("converted position x:", x, ", y:", y)
     
     new_image_pixels_2d[ y : y + sub_image_height, x : x + (sub_image_width * 4) ] = sub_image_pixels_2d
     new_image.pixels = new_image_pixels_2d.flatten()
@@ -248,7 +241,9 @@ class GenerateSingleSpritesheetButton(bpy.types.Operator):
             new_image = None
             last_x, last_y = (0,0)
             for i, name in enumerate(image_names):
+                
                 print("--------")
+
                 real_path = bpy.path.abspath('//' + name)
                 image = load_image(real_path)
 
