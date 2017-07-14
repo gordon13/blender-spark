@@ -26,14 +26,6 @@ To use it, you click the "Add animation" button. This adds a box with some field
 
 Once everything is setup, the next time you make a change to an animation, you can either render only the animation that was changed, or if changes were made to the model, render all of them at once.
 
-## Testing
-
-If you're interested in development, there are a number of test classes. You can run them with the following command at the root (any tests you add will be auto discovered):
-
-```
-python -m unittest discover
-```
-
 ## Known issues/limitations
 
 See issues tab
